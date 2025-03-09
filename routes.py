@@ -154,21 +154,18 @@ def create_order():
                 estimated_completion_date=today + timedelta(hours=total_time/60/min_operators)
             )
             db.session.add(job)
+            db.session.flush()  # Get job ID before creating components
 
             # Add components to job
-            for component in selected_components:
+            for component_id in components:
                 job_component = JobComponent(
                     job_id=job.id,
-                    component_id=component.id
+                    component_id=int(component_id)
                 )
                 db.session.add(job_component)
 
             db.session.commit()
             logger.debug(f"Created new job {job_number} for customer {name}")
-
-            # Generate PDFs
-            generate_operator_checklist(job.id)
-            generate_sales_form(job.id)
 
             flash('Order created successfully', 'success')
             return redirect(url_for('view_job', job_id=job.id))
