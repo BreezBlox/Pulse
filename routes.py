@@ -482,11 +482,22 @@ def remove_component(job_id, component_id):
 
     return redirect(url_for('view_job', job_id=job_id))
 
+@app.route('/benchmark/update', methods=['POST'])
+def update_benchmark():
+    try:
+        from update_components import update_benchmark_data
+        update_benchmark_data()
+        flash('Benchmark database updated successfully', 'success')
+    except Exception as e:
+        logger.error(f"Error updating benchmark data: {str(e)}")
+        flash(f'Error updating benchmark data: {str(e)}', 'danger')
+    return redirect(url_for('benchmark_data'))
+
 @app.route('/benchmark')
 def benchmark_data():
     cells = ProductionCell.query.order_by(ProductionCell.name).all()
     return render_template('benchmark_data.html', cells=cells)
 
-@app.route('/static/manifest.json') # Added route to serve manifest.json
+@app.route('/static/manifest.json')
 def serve_manifest():
     return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
