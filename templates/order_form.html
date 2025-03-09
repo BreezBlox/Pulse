@@ -24,6 +24,16 @@
                     </div>
 
                     <h4 class="mb-3 mt-4">Component Selection</h4>
+                    <div class="component-progress">
+                        <h5 class="text-muted mb-2">Selection Progress</h5>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"
+                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-0" id="progressText">0 of 0 standard components selected</p>
+                    </div>
+
                     {% for cell in cells %}
                     <div class="card mb-3">
                         <div class="card-header">
@@ -35,6 +45,7 @@
                                 <input class="form-check-input" type="checkbox" 
                                        name="components" value="{{ component.id }}" 
                                        id="component{{ component.id }}"
+                                       data-optional="{{ component.is_optional|lower }}"
                                        {% if not component.is_optional %}checked{% endif %}>
                                 <label class="form-check-label" for="component{{ component.id }}">
                                     {{ component.name }}
