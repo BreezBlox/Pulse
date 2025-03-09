@@ -478,3 +478,8 @@ def remove_component(job_id, component_id):
         flash('Error removing component', 'danger')
 
     return redirect(url_for('view_job', job_id=job_id))
+
+@app.route('/benchmark')
+def benchmark_data():
+    cells = ProductionCell.query.order_by(ProductionCell.name).all()
+    return render_template('benchmark_data.html', cells=cells)

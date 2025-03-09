@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Benchmark Database</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('export_csv') }}" class="btn btn-secondary">
+            <i class="bi bi-download"></i> Export to CSV
+        </a>
+    </div>
+</div>
+
+{% for cell in cells %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>{{ cell.name }}</h3>
+        <p class="text-muted mb-0">{{ cell.description or '' }}</p>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Completion Time</th>
+                        <th>Min Operators</th>
+                        <th>Added On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for component in cell.components %}
+                    <tr>
+                        <td>{{ component.name }}</td>
+                        <td>
+                            {{ "%.1f"|format(component.completion_time/60) }} hours
+                            <small class="text-muted">({{ component.completion_time }} minutes)</small>
+                        </td>
+                        <td>{{ component.min_operators }}</td>
+                        <td>{{ component.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
