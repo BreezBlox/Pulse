@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>{{ cell.name }}</h1>
+        <p class="text-muted">{{ cell.description }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Components</h3>
+    </div>
+    <div class="card-body">
+        {% if cell.components %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Component Name</th>
+                            <th>Completion Time (min)</th>
+                            <th>Min Operators</th>
+                            <th>Added On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for component in cell.components %}
+                            <tr>
+                                <td>{{ component.name }}</td>
+                                <td>{{ component.completion_time }}</td>
+                                <td>{{ component.min_operators }}</td>
+                                <td>{{ component.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No components added to this cell yet.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

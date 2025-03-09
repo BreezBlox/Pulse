@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h2>Add Component</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="cell_id" class="form-label">Production Cell</label>
+                        <select class="form-select" id="cell_id" name="cell_id" required>
+                            <option value="">Select a cell</option>
+                            {% for cell in cells %}
+                                <option value="{{ cell.id }}">{{ cell.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Component Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="completion_time" class="form-label">Completion Time (minutes)</label>
+                        <input type="number" step="0.1" class="form-control" id="completion_time" name="completion_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="min_operators" class="form-label">Minimum Operators Required</label>
+                        <input type="number" class="form-control" id="min_operators" name="min_operators" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Component</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+.navbar-brand i {
+    color: var(--bs-info);
+}
+
+.card {
+    border-color: var(--bs-dark);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.alert {
+    margin-top: 1rem;
+}
