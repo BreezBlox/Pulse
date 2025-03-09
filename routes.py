@@ -167,7 +167,9 @@ def create_order():
                 total_hours=total_time / 60,  # Convert minutes to hours
                 min_operators=min_operators,
                 max_operators=max_operators,
-                estimated_completion_date=today + timedelta(hours=total_time/60/min_operators)
+                estimated_completion_date=today + timedelta(hours=total_time/60/min_operators),
+                current_operators=0, # Added for operator tracking.
+                status = 'Pending' # Added for job status tracking.
             )
             db.session.add(job)
             db.session.flush()  # Get job ID before creating components
@@ -176,7 +178,10 @@ def create_order():
             for component_id in components:
                 job_component = JobComponent(
                     job_id=job.id,
-                    component_id=int(component_id)
+                    component_id=int(component_id),
+                    start_time=None,
+                    end_time=None,
+                    completed=False
                 )
                 db.session.add(job_component)
 
@@ -289,3 +294,89 @@ def generate_sales_form(job_id):
     """Generate and save sales form PDF"""
     sales_form(job_id)
     logger.debug(f"Generated sales form for job {job_id}")
+
+@app.route('/operator-portal')
+def operator_portal():
+    # Get jobs ordered by ETA
+    jobs = Job.query.order_by(Job.estimated_completion_date).all()
+
+    # Calculate pending components for each job
+    for job in jobs:
+        job.pending_components = sum(1 for c in job.components if not c.completed)
+
+    # Get active tasks (components started but not completed)
+    active_tasks = JobComponent.query.filter(
+        JobComponent.start_time.isnot(None),
+        JobComponent.end_time.is_(None)
+    ).all()
+
+    logger.debug(f"Retrieved {len(jobs)} jobs and {len(active_tasks)} active tasks for operator portal")
+    return render_template('operator_portal.html', jobs=jobs, active_tasks=active_tasks, Component=Component)
+
+@app.route('/job/<int:job_id>/component/<int:component_id>/start', methods=['POST'])
+def start_task(job_id, component_id):
+    try:
+        job_component = JobComponent.query.filter_by(
+            job_id=job_id,
+            id=component_id
+        ).first_or_404()
+
+        if job_component.completed:
+            flash('This component is already completed', 'warning')
+        elif job_component.start_time and not job_component.end_time:
+            flash('This task is already in progress', 'warning')
+        else:
+            job_component.start_time = datetime.utcnow()
+            job = Job.query.get(job_id)
+            job.current_operators += 1
+            job.status = 'In Progress'
+            db.session.commit()
+            logger.debug(f"Started task for job {job_id}, component {component_id}")
+            flash('Task started successfully', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error starting task: {str(e)}")
+        flash('Error starting task', 'danger')
+
+    return redirect(url_for('operator_portal'))
+
+@app.route('/job/<int:job_id>/component/<int:component_id>/end', methods=['POST'])
+def end_task(job_id, component_id):
+    try:
+        job_component = JobComponent.query.filter_by(
+            job_id=job_id,
+            id=component_id
+        ).first_or_404()
+
+        if not job_component.start_time:
+            flash('This task has not been started', 'warning')
+        elif job_component.end_time:
+            flash('This task is already completed', 'warning')
+        else:
+            end_time = datetime.utcnow()
+            job_component.end_time = end_time
+            job_component.completed = True
+
+            # Calculate actual completion time in minutes
+            duration = end_time - job_component.start_time
+            job_component.actual_completion_time = duration.total_seconds() / 60
+
+            # Update job status and operator count
+            job = Job.query.get(job_id)
+            job.current_operators -= 1
+
+            # Check if all components are completed
+            if all(c.completed for c in job.components):
+                job.status = 'Completed'
+
+            db.session.commit()
+            logger.debug(f"Completed task for job {job_id}, component {component_id}")
+            flash('Task completed successfully', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error completing task: {str(e)}")
+        flash('Error completing task', 'danger')
+
+    return redirect(url_for('operator_portal'))

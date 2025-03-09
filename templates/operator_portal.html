@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Operator Portal</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Active Jobs</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Job #</th>
+                                <th>Customer</th>
+                                <th>ETA</th>
+                                <th>Pending Components</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                            <tr>
+                                <td>{{ job.job_number }}</td>
+                                <td>{{ job.customer.name }}</td>
+                                <td>{{ job.estimated_completion_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ job.pending_components }}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#components{{ job.id }}">
+                                        View Components
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="p-0">
+                                    <div class="collapse" id="components{{ job.id }}">
+                                        <div class="card card-body border-0">
+                                            <h5>Pending Components</h5>
+                                            {% for component in job.components %}
+                                                {% if not component.completed %}
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <div>
+                                                        <strong>{{ Component.query.get(component.component_id).name }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Cell: {{ Component.query.get(component.component_id).cell.name }}
+                                                        </small>
+                                                    </div>
+                                                    {% if component.start_time and not component.end_time %}
+                                                        <form method="POST" action="{{ url_for('end_task', job_id=job.id, component_id=component.id) }}"
+                                                              style="display: inline;">
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                End Task
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <form method="POST" action="{{ url_for('start_task', job_id=job.id, component_id=component.id) }}"
+                                                              style="display: inline;">
+                                                            <button type="submit" class="btn btn-success btn-sm">
+                                                                Start Task
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Your Active Tasks</h3>
+            </div>
+            <div class="card-body">
+                {% if active_tasks %}
+                    {% for task in active_tasks %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Job #{{ task.job.job_number }}</h5>
+                            <p class="card-text">
+                                Component: {{ Component.query.get(task.component_id).name }}<br>
+                                Started: {{ task.start_time.strftime('%H:%M:%S') }}
+                            </p>
+                            <form method="POST" action="{{ url_for('end_task', job_id=task.job_id, component_id=task.id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm">End Task</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        No active tasks. Start a task from the jobs list.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
