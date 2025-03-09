@@ -6,6 +6,11 @@
         <h1>Benchmark Database</h1>
     </div>
     <div class="col-auto">
+        <form method="POST" action="{{ url_for('update_benchmark') }}" style="display: inline;">
+            <button type="submit" class="btn btn-primary me-2">
+                <i class="bi bi-arrow-clockwise"></i> Update from Excel
+            </button>
+        </form>
         <a href="{{ url_for('export_csv') }}" class="btn btn-secondary">
             <i class="bi bi-download"></i> Export to CSV
         </a>
@@ -46,7 +51,7 @@
                             <small class="text-muted">({{ component.completion_time }} minutes)</small>
                         </td>
                         <td>{{ component.min_operators }}</td>
-                        <td>{{ component.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ component.created_at.strftime('%Y-%m-%d') if component.created_at else 'N/A' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
