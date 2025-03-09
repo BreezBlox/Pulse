@@ -5,19 +5,22 @@ from models import ProductionCell, Component
 def update_benchmark_data():
     # Read Excel file
     df = pd.read_excel('attached_assets/Components.xlsx')
-    
+
+    print("Excel columns:", df.columns.tolist())  # Debug: print column names
+
     with app.app_context():
         try:
             # Delete existing data
             Component.query.delete()
             ProductionCell.query.delete()
             db.session.commit()
-            
+
             # Process each row
             cells = {}
             for _, row in df.iterrows():
-                cell_name = row['Cell']
-                
+                print("Processing row:", row.to_dict())  # Debug: print row data
+                cell_name = f"Cell {row['Cell']}"  # Convert number to "Cell X" format
+
                 # Create cell if it doesn't exist
                 if cell_name not in cells:
                     cell = ProductionCell(
@@ -27,19 +30,19 @@ def update_benchmark_data():
                     db.session.add(cell)
                     db.session.flush()  # Get cell ID
                     cells[cell_name] = cell
-                
+
                 # Create component
                 component = Component(
                     name=row['Component'],
                     cell_id=cells[cell_name].id,
-                    completion_time=float(row['Completion Time (min)']),
-                    min_operators=int(row['Min Operators'])
+                    completion_time=float(row['Time to complete']) * 60,  # Convert hours to minutes
+                    min_operators=int(row['Using how many operators'])
                 )
                 db.session.add(component)
-            
+
             db.session.commit()
             print("Successfully updated benchmark data")
-            
+
         except Exception as e:
             db.session.rollback()
             print(f"Error updating benchmark data: {str(e)}")

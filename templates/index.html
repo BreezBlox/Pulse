@@ -34,7 +34,11 @@
                             {% if job.status == 'Queued' %}
                                 <span class="badge bg-secondary">Queued</span>
                             {% else %}
-                                {% set completion = (job.completed_components / job.total_components * 100)|round %}
+                                {% if job.total_components > 0 %}
+                                    {% set completion = (job.completed_components / job.total_components * 100)|round %}
+                                {% else %}
+                                    {% set completion = 0 %}
+                                {% endif %}
                                 <div class="progress" style="height: 20px;">
                                     <div class="progress-bar" role="progressbar" 
                                          style="width: {{ completion }}%;"
