@@ -182,7 +182,7 @@ def create_order():
 @app.route('/job/<int:job_id>')
 def view_job(job_id):
     job = Job.query.get_or_404(job_id)
-    return render_template('view_job.html', job=job)
+    return render_template('view_job.html', job=job, Component=Component)
 
 @app.route('/job/<int:job_id>/operator-checklist.pdf')
 def operator_checklist(job_id):
