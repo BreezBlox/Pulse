@@ -203,7 +203,8 @@ def create_order():
 @app.route('/job/<int:job_id>')
 def view_job(job_id):
     job = Job.query.get_or_404(job_id)
-    return render_template('view_job.html', job=job, Component=Component)
+    cells = ProductionCell.query.all()  # Added to support the add component modal
+    return render_template('view_job.html', job=job, Component=Component, cells=cells)
 
 @app.route('/job/<int:job_id>/operator-checklist.pdf')
 def operator_checklist(job_id):
@@ -380,3 +381,100 @@ def end_task(job_id, component_id):
         flash('Error completing task', 'danger')
 
     return redirect(url_for('operator_portal'))
+
+@app.route('/job/<int:job_id>/delete', methods=['POST'])
+def delete_job(job_id):
+    try:
+        job = Job.query.get_or_404(job_id)
+
+        # Delete all job components
+        JobComponent.query.filter_by(job_id=job_id).delete()
+
+        # Delete the job
+        db.session.delete(job)
+        db.session.commit()
+
+        flash('Job deleted successfully', 'success')
+        return redirect(url_for('index'))
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting job: {str(e)}")
+        flash('Error deleting job', 'danger')
+        return redirect(url_for('view_job', job_id=job_id))
+
+@app.route('/job/<int:job_id>/add-component', methods=['POST'])
+def add_component_to_job(job_id):
+    try:
+        job = Job.query.get_or_404(job_id)
+        components = request.form.getlist('components')
+
+        if not components:
+            flash('Please select at least one component', 'warning')
+            return redirect(url_for('view_job', job_id=job_id))
+
+        # Add new components
+        for component_id in components:
+            job_component = JobComponent(
+                job_id=job_id,
+                component_id=int(component_id),
+                completed=False
+            )
+            db.session.add(job_component)
+
+        # Recalculate job metrics
+        all_components = Component.query.filter(Component.id.in_([c.component_id for c in job.components] + components)).all()
+        total_time = sum(c.completion_time for c in all_components)
+        min_operators = max(c.min_operators for c in all_components)
+        max_operators = min_operators * 2
+
+        # Update job
+        job.total_hours = total_time / 60
+        job.min_operators = min_operators
+        job.max_operators = max_operators
+        job.estimated_completion_date = datetime.utcnow() + timedelta(hours=total_time/60/min_operators)
+
+        db.session.commit()
+        flash('Components added successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error adding components: {str(e)}")
+        flash('Error adding components', 'danger')
+
+    return redirect(url_for('view_job', job_id=job_id))
+
+@app.route('/job/<int:job_id>/component/<int:component_id>/remove', methods=['POST'])
+def remove_component(job_id, component_id):
+    try:
+        job_component = JobComponent.query.filter_by(
+            job_id=job_id,
+            id=component_id,
+            completed=False
+        ).first_or_404()
+
+        job = Job.query.get_or_404(job_id)
+
+        # Remove the component
+        db.session.delete(job_component)
+
+        # Recalculate job metrics
+        remaining_components = Component.query.filter(Component.id.in_([c.component_id for c in job.components if c.id != component_id])).all()
+
+        if remaining_components:
+            total_time = sum(c.completion_time for c in remaining_components)
+            min_operators = max(c.min_operators for c in remaining_components)
+            max_operators = min_operators * 2
+
+            # Update job
+            job.total_hours = total_time / 60
+            job.min_operators = min_operators
+            job.max_operators = max_operators
+            job.estimated_completion_date = datetime.utcnow() + timedelta(hours=total_time/60/min_operators)
+
+        db.session.commit()
+        flash('Component removed successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error removing component: {str(e)}")
+        flash('Error removing component', 'danger')
+
+    return redirect(url_for('view_job', job_id=job_id))
