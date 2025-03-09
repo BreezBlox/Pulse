@@ -3,39 +3,80 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col">
-        <h1>Production Cells</h1>
-    </div>
-    <div class="col-auto">
-        <a href="{{ url_for('export_csv') }}" class="btn btn-secondary">
-            <i class="bi bi-download"></i> Export CSV
-        </a>
+        <h1>Production Dashboard</h1>
     </div>
 </div>
 
-{% if cells %}
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for cell in cells %}
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ cell.name }}</h5>
-                        <p class="card-text">{{ cell.description }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                Components: {{ cell.components|length }}
-                            </small>
-                        </p>
-                        <a href="{{ url_for('view_cell', cell_id=cell.id) }}" class="btn btn-primary">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Job #</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Order Date</th>
+                        <th>Ship Date</th>
+                        <th>Production Time</th>
+                        <th>Operators</th>
+                        <th>Staffing</th>
+                        <th>Current Cell</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>{{ job.job_number }}</td>
+                        <td>{{ job.customer.name }}</td>
+                        <td>
+                            {% if job.status == 'Queued' %}
+                                <span class="badge bg-secondary">Queued</span>
+                            {% else %}
+                                {% set completion = (job.completed_components / job.total_components * 100)|round %}
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ completion }}%;"
+                                         aria-valuenow="{{ completion }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ completion }}%
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ job.order_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ job.estimated_completion_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ "%.1f"|format(job.current_production_time or 0) }} hrs</td>
+                        <td>{{ job.current_operators }}/{{ job.min_operators }}</td>
+                        <td>
+                            {% if job.current_operators > job.max_operators %}
+                                <span class="badge bg-danger">Over-staffed</span>
+                            {% elif job.current_operators >= job.min_operators %}
+                                <span class="badge bg-success">Fully-staffed</span>
+                            {% else %}
+                                <span class="badge bg-warning">Under-staffed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if job.current_cell %}
+                                {{ job.current_cell }}
+                            {% else %}
+                                <span class="text-muted">Not started</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_job', job_id=job.id) }}" 
+                               class="btn btn-sm btn-primary">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-{% else %}
-    <div class="alert alert-info">
-        No production cells found. Start by adding a new cell.
-    </div>
-{% endif %}
+</div>
 {% endblock %}

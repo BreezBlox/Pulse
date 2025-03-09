@@ -12,9 +12,25 @@ logger = logging.getLogger(__name__)
 
 @app.route('/')
 def index():
-    cells = ProductionCell.query.all()
-    logger.debug(f"Retrieved {len(cells)} production cells from database")
-    return render_template('index.html', cells=cells)
+    jobs = Job.query.order_by(Job.estimated_completion_date).all()
+
+    for job in jobs:
+        # Calculate completion percentage
+        total_components = len(job.components)
+        completed_components = sum(1 for c in job.components if c.completed)
+        job.completed_components = completed_components
+        job.total_components = total_components
+
+        # Calculate current production time
+        completed_times = [c.actual_completion_time for c in job.components if c.completed and c.actual_completion_time]
+        job.current_production_time = sum(completed_times) / 60 if completed_times else 0  # Convert to hours
+
+        # Determine current cell (last non-completed component's cell)
+        current_component = next((c for c in job.components if not c.completed), None)
+        job.current_cell = Component.query.get(current_component.component_id).cell.name if current_component else None
+
+    logger.debug(f"Retrieved {len(jobs)} jobs for dashboard")
+    return render_template('index.html', jobs=jobs)
 
 @app.route('/cell/add', methods=['GET', 'POST'])
 def add_cell():
