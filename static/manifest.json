@@ -1,0 +1,21 @@
+{
+  "name": "Pulse - Production Tracking",
+  "short_name": "Pulse",
+  "description": "Comprehensive production job tracking system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#212529",
+  "theme_color": "#212529",
+  "icons": [
+    {
+      "src": "https://cdn.discordapp.com/attachments/1005416721835900990/1348205649082843176/breez.blox_vector_logo_of_a_gear_with_a_pulse_83b4294b-f6ae-4279-ad55-4e3442c1ec95.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn.discordapp.com/attachments/1005416721835900990/1348205649082843176/breez.blox_vector_logo_of_a_gear_with_a_pulse_83b4294b-f6ae-4279-ad55-4e3442c1ec95.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

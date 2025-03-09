@@ -2,7 +2,7 @@ import csv
 import logging
 from io import StringIO, BytesIO
 from datetime import datetime, timedelta
-from flask import render_template, request, redirect, url_for, flash, send_file
+from flask import render_template, request, redirect, url_for, flash, send_file, send_from_directory # Added send_from_directory import
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from app import app, db
@@ -486,3 +486,7 @@ def remove_component(job_id, component_id):
 def benchmark_data():
     cells = ProductionCell.query.order_by(ProductionCell.name).all()
     return render_template('benchmark_data.html', cells=cells)
+
+@app.route('/static/manifest.json') # Added route to serve manifest.json
+def serve_manifest():
+    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
