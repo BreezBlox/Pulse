@@ -1,6 +1,6 @@
 import pandas as pd
 from app import app, db
-from models import ProductionCell, Component
+from models import ProductionCell, Component, JobComponent
 
 def update_benchmark_data():
     # Read Excel file
@@ -10,7 +10,8 @@ def update_benchmark_data():
 
     with app.app_context():
         try:
-            # Delete existing data
+            # Delete existing data in correct order
+            JobComponent.query.delete()  # Delete job components first
             Component.query.delete()
             ProductionCell.query.delete()
             db.session.commit()
@@ -36,7 +37,8 @@ def update_benchmark_data():
                     name=row['Component'],
                     cell_id=cells[cell_name].id,
                     completion_time=float(row['Time to complete']) * 60,  # Convert hours to minutes
-                    min_operators=int(row['Using how many operators'])
+                    min_operators=int(row['Using how many operators']),
+                    is_optional=row['Standard(s) or Optional(o)'].upper() == 'O'  # Set is_optional based on the column
                 )
                 db.session.add(component)
 

@@ -64,8 +64,9 @@ def add_component():
         cell_id = request.form.get('cell_id')
         completion_time = request.form.get('completion_time')
         min_operators = request.form.get('min_operators')
+        is_optional = request.form.get('is_optional')
 
-        if not all([name, cell_id, completion_time, min_operators]):
+        if not all([name, cell_id, completion_time, min_operators, is_optional]):
             flash('All fields are required', 'danger')
             return redirect(url_for('add_component'))
 
@@ -74,7 +75,8 @@ def add_component():
                 name=name,
                 cell_id=cell_id,
                 completion_time=float(completion_time),
-                min_operators=int(min_operators)
+                min_operators=int(min_operators),
+                is_optional = True if is_optional == 'on' else False
             )
             db.session.add(component)
             db.session.commit()
@@ -102,7 +104,7 @@ def export_csv():
     cw = csv.writer(si)
 
     # Write headers
-    cw.writerow(['Cell', 'Component', 'Completion Time (min)', 'Min Operators'])
+    cw.writerow(['Cell', 'Component', 'Type', 'Completion Time (min)', 'Min Operators'])
 
     # Write data
     cells = ProductionCell.query.all()
@@ -111,6 +113,7 @@ def export_csv():
             cw.writerow([
                 cell.name,
                 component.name,
+                'Optional' if component.is_optional else 'Standard',
                 component.completion_time,
                 component.min_operators
             ])

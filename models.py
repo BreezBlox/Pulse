@@ -15,6 +15,7 @@ class Component(db.Model):
     completion_time = db.Column(db.Float, nullable=False)  # Time in minutes
     min_operators = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_optional = db.Column(db.Boolean, default=False)  # Added field for optional/standard
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)

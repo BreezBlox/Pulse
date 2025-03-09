@@ -24,6 +24,7 @@
                 <thead>
                     <tr>
                         <th>Component</th>
+                        <th>Type</th>
                         <th>Completion Time</th>
                         <th>Min Operators</th>
                         <th>Added On</th>
@@ -33,6 +34,13 @@
                     {% for component in cell.components %}
                     <tr>
                         <td>{{ component.name }}</td>
+                        <td>
+                            {% if component.is_optional %}
+                            <span class="badge bg-info">Optional</span>
+                            {% else %}
+                            <span class="badge bg-primary">Standard</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {{ "%.1f"|format(component.completion_time/60) }} hours
                             <small class="text-muted">({{ component.completion_time }} minutes)</small>
