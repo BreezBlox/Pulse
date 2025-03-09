@@ -1,0 +1,50 @@
+ORDER FORM
+
+- the user adds customer information:
+    - name, number, email
+- then adds Components to be installed for the job number based on the components saved in the Benchmark Database
+- A job number is generated for this customer, saved into a Customer Database and the job is displayed on the Dashboard
+- thisll also generate two things to download:
+    - a PDF Operator Checklist to ensure each Component specific for the job has been installed,
+    - and a formal PDF sales form with the following information with the option to export into CSV:
+        - job#, name, number, email, order date,
+        - total hrs to complete based on the minimum and maximum operators required, minimum and maximum operators required,  and ETA delivery date based on the Benchmark Database
+
+CUSTOMER DATABASE
+
+- pre
+    - holds a neatly organized record of the following generated from the Order Form:
+        - each job# with customer name
+        - each component selected for the job from the Order Form with indication of what has and hasnt been completed(updated from the Operator Portal)
+        - min and max operators required - calculated using Benchmark Database
+        - min and max completion dates - calculated using Benchmark Database
+        - number of operators working on the job out of how many required [indication whether over-staffed, fully-staffed, under-staffed] - updated via Operator Portal logs
+
+- post data for analytics
+    - holds a neatly organized record of the following:
+        - each job# with customer name
+        - actual time to complete the job - calculated from Task logs
+        - each job also has a breakdown of how much time each component actually took to be completed by the operator, as well as names of operators who worked on the component
+
+OPERATOR PORTAL
+
+- an operator is presented with a dashboard of the jobs in the Customer Database in order of ETA delivery date
+- They click on a job and are presented with the current list of Components not yet completed for the job
+- Then the operator selects the Component and clicks Start Task which begins to record the time.
+- The Operator can view the list of Tasks theyve started and click End Task once completed which stops and records the total time
+- all of these Task Logs are used to update:
+    - Dashboard - job status, ETA, operators working on the job,
+
+DASHBOARD
+
+- this is what information will be displayed in the dashboard which syncs to the Order Form and Operator Portal
+    - job number
+    - status:
+        - Queued - if no Task started
+        - % of completion - if operators have begun a Task for the job - calculated using Formula, Benchmark Database, Order Form
+    - order date
+    - ship date
+    - current production time
+    - current number of operators working on the job
+    - indication whether the job is over-staffed, fully-staffed, or under-staffed
+    - current Cell the job is at within the production line

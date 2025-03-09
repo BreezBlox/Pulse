@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h2>New Production Order</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="orderForm">
+                    <h4 class="mb-3">Customer Information</h4>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+
+                    <h4 class="mb-3 mt-4">Component Selection</h4>
+                    {% for cell in cells %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>{{ cell.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for component in cell.components %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="components" value="{{ component.id }}" 
+                                       id="component{{ component.id }}">
+                                <label class="form-check-label" for="component{{ component.id }}">
+                                    {{ component.name }}
+                                    <small class="text-muted">
+                                        ({{ component.completion_time }} min, 
+                                        {{ component.min_operators }} operators min)
+                                    </small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary">Create Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

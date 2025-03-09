@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Job #{{ job.job_number }}</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('operator_checklist', job_id=job.id) }}" class="btn btn-secondary me-2">
+            <i class="bi bi-file-pdf"></i> Operator Checklist
+        </a>
+        <a href="{{ url_for('sales_form', job_id=job.id) }}" class="btn btn-secondary">
+            <i class="bi bi-file-pdf"></i> Sales Form
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Customer Information</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ job.customer.name }}</p>
+                <p><strong>Phone:</strong> {{ job.customer.phone }}</p>
+                <p><strong>Email:</strong> {{ job.customer.email }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Job Details</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Status:</strong> {{ job.status }}</p>
+                <p><strong>Order Date:</strong> {{ job.order_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Estimated Completion:</strong> {{ job.estimated_completion_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Total Hours:</strong> {{ "%.1f"|format(job.total_hours) }}</p>
+                <p><strong>Required Operators:</strong> {{ job.min_operators }} - {{ job.max_operators }}</p>
+                <p><strong>Current Operators:</strong> {{ job.current_operators }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Components</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Cell</th>
+                        <th>Status</th>
+                        <th>Completion Time</th>
+                        <th>Operators</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job_component in job.components %}
+                    <tr>
+                        <td>{{ Component.query.get(job_component.component_id).name }}</td>
+                        <td>{{ Component.query.get(job_component.component_id).cell.name }}</td>
+                        <td>
+                            {% if job_component.completed %}
+                            <span class="badge bg-success">Completed</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if job_component.actual_completion_time %}
+                            {{ "%.1f"|format(job_component.actual_completion_time) }} min
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ job_component.operators or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

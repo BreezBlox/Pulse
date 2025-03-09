@@ -9,5 +9,8 @@ dependencies = [
     "flask-sqlalchemy>=3.1.1",
     "gunicorn>=23.0.0",
     "psycopg2-binary>=2.9.10",
+    "reportlab>=4.3.1",
     "routes>=2.5.1",
+    "sqlalchemy>=2.0.38",
+    "weasyprint>=64.1",
 ]
